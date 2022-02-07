@@ -74,7 +74,7 @@ and call puavo-update-repository with
 
 ### puavo-update-repository
 
-The main task of this progie is the generation of the needed config files used by the PuavoOS funktion before the function is called.
+The main task of this progie is the generation of the needed config files before the function the PuavoOS funtion make-rdiffs is called.
 
 ```
 Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]
@@ -95,7 +95,7 @@ puavo-update-repository exposes all images found to the mirror. Sometimes this i
 
 #### Config Files
 
-The config files reside in /puavo-os/config/images. There is one file per distribution (stretch, buster, bullseye, bookworm, ...), whis is named e.g. buster.json for the buster distribution. 
+The config files reside in **/puavo-os/config/images/**. There is one file per distribution (stretch, buster, bullseye, bookworm, ...), whis is named e.g. buster.json for the buster distribution. 
 
 This might e a typical file for **/puavo-os/config/images/buster.json**:
 
