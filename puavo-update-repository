@@ -1,12 +1,63 @@
 #!/bin/sh
 
-if test -z "$1" -o "$1" = "-h" -o "$1" = "--help";then
-    echo "usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]"
+help(){
+    echo "Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]"
     echo
     echo "       Maintains an image repository of all images from IMAGE_DIR"
     echo "       in MIRROR_DIR. When MIRROR_DIR is not set it defaults to"
     echo "       IMAGE_DIR/mirror ."
-    exit 0
+    echo 
+    echo "Options:"
+    echo "    -r, --repository  HOSTNAME   set repository's hostname (def: images.amxa.ch)"
+    echo "    -p, --puavo-os DIR           set dir to DIR of puavo-os (def: /puavo-os/)"
+    echo "    -n, --no-files               does not generate image.json/buster.json/.. files"
+    echo "    -h, --help                   show this message"
+    echo
+
+}
+
+REPOSITORY="images.amxa.ch"
+
+PUAVO_OS=""
+NO_FILES=false
+while [ $# -gt 0 ]; do
+    case $1 in
+        -h|--help)
+            shift
+            help
+            exit 0
+            ;;
+        -r|--repository)
+            shift
+            REPOSITORY=$1
+            shift
+            ;;
+        -p|--puavo-os)
+            shift
+            PUAVO_OS=$1
+	    shift
+            ;;
+        -n|--no-files)
+            shift
+            NO_FILES=true
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            usage_error "invalid argument '$1'"
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+if test -z "$PUAVO_OS";then PUAVO_OS="/puavo-os";fi
+if ! test -d $PUAVO_OS;then
+    echo "error: puavo-os installation not found"
+    exit 1
 fi
 
 
@@ -66,7 +117,7 @@ list_images(){
 #fi
 
     NEW=false
-    test -d /puavo-os/config/images && NEW=true
+    test -d $PUAVO_OS/config/images && NEW=true
     
     
 SERIES=""
@@ -101,29 +152,21 @@ fi
 
 }
 
-list_images
-
-exit
-
-# make images.json
-test -d $IMAGE_DIR/.puavo-os || mkdir -p $IMAGE_DIR/.puavo-os
-list_images > $IMAGE_DIR/.puavo-os/images.json
+if ! $NO_FILES; then list_images; fi
 
 # call make
-test -d $MIRROR_DIR/.checksums || mkdir -p $MIRROR_DIR/.checksums
-test -d $MIRROR_DIR/.signatures || mkdir -p $MIRROR_DIR/.signatures
-test -d $MIRROR_DIR/meta || mkdir -p $MIRROR_DIR/meta
-test -d $MIRROR_DIR/rdiffs || mkdir -p $MIRROR_DIR/rdiffs
+mkdir -p $MIRROR_DIR/.checksums
+mkdir -p $MIRROR_DIR/.signatures
+mkdir -p $MIRROR_DIR/meta
+mkdir -p $MIRROR_DIR/rdiffs
+
 cd ${IMAGE_DIR}/.puavo-os
-
-
 #needs absolute paths!!!!!!!!!!!!
-sudo /puavo-os/.aux/make-rdiffs \
+sudo $PUAVO_OS/.aux/make-rdiffs \
         image_dir="${IMAGE_DIR}" \
-	images_urlbase="https://cdn.puavo.org" \
+	images_urlbase="${REPOSITORY}" \
 	mirror_dir="${MIRROR_DIR}" \
 	mode="production" 
-
 
 # fix permissions
 sudo chown --recursive --reference ${IMAGE_DIR}  ${IMAGE_DIR}/.puavo-os
