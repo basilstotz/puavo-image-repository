@@ -12,7 +12,7 @@ But why would you wand to run your own repostiory? You might want
 
 A Puavo Image Repository is just a plain https service, which is only serving static files. So any server with enough disc space (~500 Gbyte) will do the job. Be aware, that the generation of the rdiff-files is very cpu/io intensive so it might be reasonable to prepare your date offline, only  uploading the final data to the server.  
 
-### Offline Data Preparation
+### Mirror Preparation
 
 Let's assume we want to expose the following images for the clients:
 
@@ -71,5 +71,35 @@ and call puavo-update-repository with
 ```
 # puavo-update-repository --puavo-os path/to/puavo-os puavo-os-images mirror
 ```
+
+### puavo-update-repository
+
+The main task of this progie is the generation of the needed config files used by the PuavoOS funktion before the function is called.
+
+```
+Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]
+
+       Maintains an image repository of all images from IMAGE_DIR
+       in MIRROR_DIR (def: IMAGE_DIR/mirror)
+
+Options:
+    -r, --repository  HOSTNAME   set repository's hostname (def: images.amxa.ch)
+    -p, --puavo-os DIR           set dir to DIR of puavo-os (def: /puavo-os/)
+    -n, --no-files               does not generate image.json/buster.json/.. files
+    -h, --help                   show this message
+
+```
+### Manual Configuration
+
+puavo-update-repository exposes all images found to the mirror. Sometimes this is not desired (or for some other reasons) the whole process can be made manually.
+
+#### Config Files
+
+The config files reside in /puavo-os/config/images:
+
+#### Making Rdiffs
+
+Edit ....
+
 
 That's it(for now).
