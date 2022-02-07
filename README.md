@@ -125,7 +125,7 @@ Edit the file **/puavo-os/defaults.mk** to reflect your seetings (you may remove
 then
 
 ```
-$ cd path/to/puavo-os/
+$ cd /puavo-os/
 $ sudo make rdiffs
 ```
 
