@@ -1,24 +1,26 @@
 #!/bin/sh
 
+#default values
+REPOSITORY="https://images.amxa.ch"
+PUAVO_OS="/puavo-os"
+
+
 help(){
     echo "Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]"
     echo
     echo "       Maintains an image repository of all images from IMAGE_DIR"
-    echo "       in MIRROR_DIR. When MIRROR_DIR is not set it defaults to"
-    echo "       IMAGE_DIR/mirror ."
+    echo "       in MIRROR_DIR (def: IMAGE_DIR/mirror)"
     echo 
     echo "Options:"
-    echo "    -r, --repository  HOSTNAME   set repository's hostname (def: images.amxa.ch)"
-    echo "    -p, --puavo-os DIR           set dir to DIR of puavo-os (def: /puavo-os/)"
-    echo "    -n, --no-files               does not generate image.json/buster.json/.. files"
+    echo "    -r, --repository  HOSTNAME   set repository's hostname (def: $REPOSITORY)"
+    echo "    -p, --puavo-os DIR           set puavo-os to DIR (def: $PUAVO_OS)"
+    echo "    -n, --no-config              does not generate config"
     echo "    -h, --help                   show this message"
     echo
 
 }
 
-REPOSITORY="images.amxa.ch"
 
-PUAVO_OS=""
 NO_FILES=false
 while [ $# -gt 0 ]; do
     case $1 in
@@ -54,7 +56,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if test -z "$PUAVO_OS";then PUAVO_OS="/puavo-os";fi
 if ! test -d $PUAVO_OS;then
     echo "error: puavo-os installation not found"
     exit 1
@@ -69,6 +70,7 @@ fi
 IMAGE_DIR=$(realpath $IMAGE_DIR)
 
 if test -z "$2";then
+    mkdir -p $IMAGE_DIR/mirror
     MIRROR_DIR="$IMAGE_DIR/mirror"
 else
     MIRROR_DIR=$(realpath $2)
@@ -140,6 +142,47 @@ done
 #echo $DISTRIBS -- $SERIES
 
 if $NEW; then
+    rm -r $PUAVO_OS/config/images
+    mkdir -p $PUAVO_OS/config/images/
+    for D in $DISTRIBS; do
+       echo $D
+       lister $D > $PUAVO_OS/config/images/$D.json
+    done
+else
+    mkdir -p $PUAVO_OS
+    lister "" > $PUAVO_OS/images.json
+fi
+
+}
+
+if ! $NO_FILES; then list_images; fi
+
+# here rdiff starts
+cat <<EOF > $PUAVO_OS/defaults.mk
+   image_dir               := $IMAGE_DIR
+   images_urlbase          := $REPOSITORY
+   mirror_dir              := $MIRROR_DIR
+EOF
+
+ort=$(pwd)
+cd $PUAVO_OS
+
+sudo make rdiffs
+
+cd $ort
+
+# fix permissions
+#sudo chown --recursive --reference ${IMAGE_DIR}  ${IMAGE_DIR}/.puavo-os
+sudo chown --recursive --reference ${IMAGE_DIR}  ${MIRROR_DIR}
+
+exit
+
+
+
+
+
+################## garbage &&&&&&&&&&&&&&&&&&&&&&&&&&
+if $NEW; then
     mkdir -p $IMAGE_DIR/.puavo-os/config/images/
     for D in $DISTRIBS; do
        echo $D
@@ -150,9 +193,6 @@ else
     lister "" > $IMAGE_DIR/.puavo-os/images.json
 fi
 
-}
-
-if ! $NO_FILES; then list_images; fi
 
 # call make
 mkdir -p $MIRROR_DIR/.checksums
@@ -167,12 +207,6 @@ sudo $PUAVO_OS/.aux/make-rdiffs \
 	images_urlbase="${REPOSITORY}" \
 	mirror_dir="${MIRROR_DIR}" \
 	mode="production" 
-
-# fix permissions
-sudo chown --recursive --reference ${IMAGE_DIR}  ${IMAGE_DIR}/.puavo-os
-sudo chown --recursive --reference ${IMAGE_DIR}  ${MIRROR_DIR}
-
-exit
 
 
 
