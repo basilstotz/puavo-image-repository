@@ -49,11 +49,27 @@ mirror
 ```
 The creation of these additional files is an integral part of PuavoOS and can be done on every Puavo installation (of course  it can also be done on non PuavoOS oss's)
 
-### Quick Start
-When your images are in puavo-os-images and your mirror will mirror. You just call (the binary in this repo!):
+#### On PuavoOS
+When your images are in **puavo-os-images** and your mirror will reside in **mirror**. You just call (the binary in this repo!):
 
 ```
 # puavo-update-repository puavo-os-images mirror
 ```
 
 Now, just wait (some hours) and enjoy your updated repository.
+
+#### On other Platforms
+
+Other platforms lack the PuavoOS installation. So just do
+
+```
+$ git clone https://github.com/puavo-org/puavo-os.git
+```
+
+and call puavo-update-repository with
+
+```
+# puavo-update-repository --puavo-os path/to/puavo-os puavo-os-images mirror
+```
+
+That's it(for now).
