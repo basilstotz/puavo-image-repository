@@ -14,7 +14,7 @@ A Puavo Image Repository is just a plain https service, which is only serving st
 
 ### Mirror Preparation
 
-Let's assume we want to expose the following images for the clients:
+Let's assume we want to expose the following images (living in e.g. the **puavo-os-images** dir) for the clients:
 
 ```
 puavo-os-images
