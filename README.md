@@ -49,6 +49,7 @@ mirror
 ```
 The creation of these additional files is an integral part of PuavoOS and can be done on every Puavo installation (of course  it can also be done on non PuavoOS oss's)
 
+### Quick Start
 When your images are in puavo-os-images and your mirror will mirror. You just call (the binary in this repo!):
 
 ```
