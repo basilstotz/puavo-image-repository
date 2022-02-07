@@ -85,7 +85,7 @@ Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]
 Options:
     -r, --repository  HOSTNAME   set repository's hostname (def: images.amxa.ch)
     -p, --puavo-os DIR           set dir to DIR of puavo-os (def: /puavo-os/)
-    -n, --no-files               does not generate image.json/buster.json/.. files
+    -n, --no-config              does not generate confiruation files
     -h, --help                   show this message
 
 ```
@@ -95,11 +95,21 @@ puavo-update-repository exposes all images found to the mirror. Sometimes this i
 
 #### Config Files
 
-The config files reside in /puavo-os/config/images:
+The config files reside in /puavo-os/config/images. There is one file per distribution (stretch, buster, bullseye, bookworm, ...), whis is named e.g. buster.json for the buster distribution. 
 
-#### Making Rdiffs
+This might e a typical file for **/puavo-os/config/images/buster.json**:
 
-Edit ....
+```
+{
+  "puavo-os-amxa-buster-amd64": [
+    "puavo-os-amxa-buster-2022-01-17-120001-amd64.img",
+    "puavo-os-amxa-buster-2022-01-20-173248-amd64.img"
+ ],
+  "puavo-os-free-buster-amd64": [
+    "puavo-os-free-buster-2022-02-04-140532-amd64.img"
+ ]
+}
 
+```
+Use the option --no-config to prevent puavo-update-repository overwriting your manually maintained config files.
 
-That's it(for now).
