@@ -47,3 +47,12 @@ mirror
     ├── puavo-os-amxa-buster-2022-01-17-120001--2022-01-20-173248-amd64.rdiff
     └── puavo-os-amxa-buster-2022-01-20-173248--2022-01-17-120001-amd64.rdiff
 ```
+The creation of these additional files is an integral part of PuavoOS and can be done on every Puavo installation (of course  it can also be done on non PuavoOS oss's)
+
+When your images are in puavo-os-images and your mirror will mirror. You just call (the binary in this repo!):
+
+```
+# puavo-update-repository puavo-os-images mirror
+```
+
+Now, just wait (some hours) and enjoy your updated repository.
