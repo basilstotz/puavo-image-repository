@@ -113,3 +113,20 @@ This might e a typical file for **/puavo-os/config/images/buster.json**:
 ```
 Use the option --no-config to prevent puavo-update-repository overwriting your manually maintained config files.
 
+#### Making Rdiffs
+
+Edit the file **/puavo-os/defaults.mk** to reflect your seetings:
+
+```
+   image_dir               := <path/to/your/image_dir>
+   images_urlbase          := <https://urlofrepo>
+   mirror_dir              := <path/to/mirror_dir>
+```
+then
+
+```
+$ cd path/to/puavo-os/
+$ sudo make rdiffs
+```
+
+
