@@ -6,7 +6,7 @@ PUAVO_OS="/puavo-os"
 
 
 help(){
-    echo "Usage: puavo-img-repo  IMAGE_DIR [MIRROR_DIR]"
+    echo "Usage: $(basename $0)  IMAGE_DIR [MIRROR_DIR]"
     echo
     echo "       Maintains an image repository of all images from IMAGE_DIR"
     echo "       in MIRROR_DIR (def: IMAGE_DIR/mirror)"
@@ -14,67 +14,12 @@ help(){
     echo "Options:"
     echo "    -r, --repository  HOSTNAME   set repository's hostname (def: $REPOSITORY)"
     echo "    -p, --puavo-os DIR           set puavo-os to DIR (def: $PUAVO_OS)"
-    echo "    -n, --no-config              does not generate config"
+    echo "    -n, --no-config              does not generate config, just make rdiffs"
     echo "    -h, --help                   show this message"
     echo
 
 }
 
-
-NO_FILES=false
-while [ $# -gt 0 ]; do
-    case $1 in
-        -h|--help)
-            shift
-            help
-            exit 0
-            ;;
-        -r|--repository)
-            shift
-            REPOSITORY=$1
-            shift
-            ;;
-        -p|--puavo-os)
-            shift
-            PUAVO_OS=$1
-	    shift
-            ;;
-        -n|--no-files)
-            shift
-            NO_FILES=true
-            ;;
-        --)
-            shift
-            break
-            ;;
-        -*)
-            usage_error "invalid argument '$1'"
-            ;;
-        *)
-            break
-            ;;
-    esac
-done
-
-if ! test -d $PUAVO_OS;then
-    echo "error: puavo-os installation not found"
-    exit 1
-fi
-
-
-IMAGE_DIR="$1"
-if ! test -d $IMAGE_DIR;then
-    echo "error: IMAGEDIR \"$IMAGE_DIR\" not found"
-    exit 1
-fi
-IMAGE_DIR=$(realpath $IMAGE_DIR)
-
-if test -z "$2";then
-    mkdir -p $IMAGE_DIR/mirror
-    MIRROR_DIR="$IMAGE_DIR/mirror"
-else
-    MIRROR_DIR=$(realpath $2)
-fi
 
 
 lister(){
@@ -155,7 +100,36 @@ fi
 
 }
 
-if ! $NO_FILES; then list_images; fi
+make_rdiffs_alt()
+
+    IMAGE_DIR=$1
+    REPOSITORY=$2
+    MIRROR_DIR=$3
+
+    # call make
+    mkdir -p $MIRROR_DIR/.checksums
+    mkdir -p $MIRROR_DIR/.signatures
+    mkdir -p $MIRROR_DIR/meta
+    mkdir -p $MIRROR_DIR/rdiffs
+
+    cd ${IMAGE_DIR}/.puavo-os
+    #needs absolute paths!!!!!!!!!!!!
+    sudo $PUAVO_OS/.aux/make-rdiffs \
+        image_dir="${IMAGE_DIR}" \
+	images_urlbase="${REPOSITORY}" \
+	mirror_dir="${MIRROR_DIR}" \
+	mode="production" 
+
+}
+
+
+
+
+make_rdiffs()
+
+    IMAGE_DIR=$1
+    REPOSITORY=$2
+    MIRROR_DIR=$3
 
 # here rdiff starts
 cat <<EOF > $PUAVO_OS/defaults.mk
@@ -164,49 +138,86 @@ cat <<EOF > $PUAVO_OS/defaults.mk
    mirror_dir              := $MIRROR_DIR
 EOF
 
-ort=$(pwd)
-cd $PUAVO_OS
+    ort=$(pwd)
+    cd $PUAVO_OS
 
-sudo make rdiffs
+    sudo make rdiffs
 
-cd $ort
+    cd $ort
 
-# fix permissions
-#sudo chown --recursive --reference ${IMAGE_DIR}  ${IMAGE_DIR}/.puavo-os
-sudo chown --recursive --reference ${IMAGE_DIR}  ${MIRROR_DIR}
+}
+
+
+
+ main(){
+     
+    NO_FILES=false
+    while [ $# -gt 0 ]; do
+	case $1 in
+            -h|--help)
+		shift
+		help
+		exit 0
+		;;
+            -r|--repository)
+		shift
+		REPOSITORY=$1
+		shift
+		;;
+            -p|--puavo-os)
+		shift
+		PUAVO_OS=$1
+		shift
+		;;
+            -n|--no-files)
+		shift
+		NO_FILES=true
+		;;
+            --)
+		shift
+		break
+		;;
+            -*)
+		usage_error "invalid argument '$1'"
+		;;
+            *)
+		break
+		;;
+	esac
+    done
+
+    if ! test -d $PUAVO_OS;then
+	echo "error: puavo-os installation not found"
+	exit 1
+    fi
+
+
+    IMAGE_DIR="$1"
+    if ! test -d $IMAGE_DIR;then
+	echo "error: IMAGEDIR \"$IMAGE_DIR\" not found"
+	exit 1
+    fi
+    IMAGE_DIR=$(realpath $IMAGE_DIR)
+
+    if test -z "$2";then
+	mkdir -p $IMAGE_DIR/mirror
+	MIRROR_DIR="$IMAGE_DIR/mirror"
+    else
+	MIRROR_DIR=$(realpath $2)
+    fi
+
+    
+    # ok, here we go
+    if ! $NO_FILES; then list_images; fi
+
+    make_rdiffs $IMAGE_DIR $REPOSITORY $MIRROR_DIR
+
+    # fix permissions
+    sudo chown --recursive --reference ${IMAGE_DIR}  ${MIRROR_DIR}
+}
+
+main
 
 exit
-
-
-
-
-
-################## garbage &&&&&&&&&&&&&&&&&&&&&&&&&&
-if $NEW; then
-    mkdir -p $IMAGE_DIR/.puavo-os/config/images/
-    for D in $DISTRIBS; do
-       echo $D
-       lister $D > $IMAGE_DIR/.puavo-os/config/images/$D.json
-    done
-else
-    mkdir -p $IMAGE_DIR/.puavo-os
-    lister "" > $IMAGE_DIR/.puavo-os/images.json
-fi
-
-
-# call make
-mkdir -p $MIRROR_DIR/.checksums
-mkdir -p $MIRROR_DIR/.signatures
-mkdir -p $MIRROR_DIR/meta
-mkdir -p $MIRROR_DIR/rdiffs
-
-cd ${IMAGE_DIR}/.puavo-os
-#needs absolute paths!!!!!!!!!!!!
-sudo $PUAVO_OS/.aux/make-rdiffs \
-        image_dir="${IMAGE_DIR}" \
-	images_urlbase="${REPOSITORY}" \
-	mirror_dir="${MIRROR_DIR}" \
-	mode="production" 
-
 
 
