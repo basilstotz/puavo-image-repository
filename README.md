@@ -1,6 +1,6 @@
 # Puavo Image Repository
 
-This document describes how run to your own Puavo Image Repository.
+This document describes how to setup your own Puavo Image Repository.
 
 ### Why?
 But why would you wand to run your own repostiory? You might want
@@ -112,4 +112,23 @@ This might e a typical file for **/puavo-os/config/images/buster.json**:
 
 ```
 Use the option --no-config to prevent puavo-update-repository overwriting your manually maintained config files.
+
+#### Making Rdiffs
+
+Edit the file **/puavo-os/defaults.mk** to reflect your seetings (you may remove all other lines!):
+
+```
+   image_dir               := <path/to/your/image_dir>
+   images_urlbase          := <https://host.domain.tld>
+   mirror_dir              := <path/to/mirror_dir>
+```
+then
+
+```
+$ cd /puavo-os/
+$ sudo make rdiffs
+```
+
+Btw: That's exactly what puavo-update-repository does!
+
 
