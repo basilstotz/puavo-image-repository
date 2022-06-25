@@ -209,11 +209,18 @@ main(){
     # ok, here we go
     if ! $NO_FILES; then list_images; fi
 
-    for DIST in $PUAVO_OS/config/images/*; do
-	D=$(basename -s .json $DIST)
-	echo make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
-        make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
-    done
+    NEW=false
+    test -d $PUAVO_OS/config/images && NEW=true
+    
+    if $NEW; then
+	for DIST in $PUAVO_OS/config/images/*; do
+	    D=$(basename -s .json $DIST)
+	    echo make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
+	    make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
+	done
+    else
+	make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" ""
+    fi
     
     # fix permissions
     sudo chown --recursive --reference "${IMAGE_DIR}"  "${MIRROR_DIR}"
