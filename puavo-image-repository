@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #default values
-REPOSITORY="https://images.amxa.ch"
+REPOSITORY="https://cdn.amxa.ch"
 PUAVO_OS="/puavo-os"
 NO_FILES=false
 
@@ -128,12 +128,13 @@ make_rdiffs(){
     IMAGE_DIR=$1
     REPOSITORY=$2
     MIRROR_DIR=$3
-
+    DEBOOTSTRAP_SUITE=$4
 # here rdiff starts
 cat <<EOF > $PUAVO_OS/defaults.mk
    image_dir               := $IMAGE_DIR
    images_urlbase          := $REPOSITORY
    mirror_dir              := $MIRROR_DIR
+   debootstrap_suite       := $DEBOOTSTRAP_SUITE
 EOF
 
     ort=$(pwd)
@@ -208,8 +209,12 @@ main(){
     # ok, here we go
     if ! $NO_FILES; then list_images; fi
 
-    make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR"
-
+    for DIST in $PUAVO_OS/config/images/*; do
+	D=$(basename -s .json $DIST)
+	echo make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
+        make_rdiffs "$IMAGE_DIR" "$REPOSITORY" "$MIRROR_DIR" "$D"
+    done
+    
     # fix permissions
     sudo chown --recursive --reference "${IMAGE_DIR}"  "${MIRROR_DIR}"
 }
