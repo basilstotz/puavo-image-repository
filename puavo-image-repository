@@ -60,10 +60,7 @@ lister(){
 
 list_images(){
 
-    NEW=false
-    test -d $PUAVO_OS/config/images && NEW=true
-    
-    
+        
     SERIES=""
     DISTRIBS=""
     for I in $(find "$IMAGE_DIR" -maxdepth 1 -name '*-os-*-20*-amd64\.img'); do
@@ -125,16 +122,11 @@ make_rdiffs_alt(){
 
 make_rdiffs(){
 
-    IMAGE_DIR=$1
-    REPOSITORY=$2
-    MIRROR_DIR=$3
-    DEBOOTSTRAP_SUITE=$4
-# here rdiff starts
 cat <<EOF > $PUAVO_OS/defaults.mk
-   image_dir               := $IMAGE_DIR
-   images_urlbase          := $REPOSITORY
-   mirror_dir              := $MIRROR_DIR
-   debootstrap_suite       := $DEBOOTSTRAP_SUITE
+   image_dir               := $1
+   images_urlbase          := $2
+   mirror_dir              := $3
+   debootstrap_suite       := $4
 EOF
 
     ort=$(pwd)
@@ -143,7 +135,6 @@ EOF
     sudo make rdiffs
 
     cd "$ort" || exit
-
 }
 
 
@@ -205,12 +196,11 @@ main(){
 	MIRROR_DIR=$(realpath "$2")
     fi
 
-    
-    # ok, here we go
-    if ! $NO_FILES; then list_images; fi
-
     NEW=false
     test -d $PUAVO_OS/config/images && NEW=true
+
+    # ok, here we go
+    if ! $NO_FILES; then list_images; fi
     
     if $NEW; then
 	for DIST in $PUAVO_OS/config/images/*; do
